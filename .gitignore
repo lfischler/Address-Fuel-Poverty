@@ -1,0 +1,6 @@
+/.vscode
+
+test/
+app/data/
+app/data/geo_data_by_district/
+source_data/
