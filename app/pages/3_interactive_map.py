@@ -7,11 +7,15 @@ import os
 import branca
 import json
 import ast
+from urllib.request import urlopen
 
 # set global variables
 app_dir = os.path.dirname(os.path.dirname(__file__))
 # this variable points to the main folder of the app
 
+file_locations = pd.read_csv(os.path.join(app_dir,
+                                          'file_locations.csv'),
+                             index_col='filename')
 
 @st.cache_data  # cache the data that was loaded for quicker loadtimes
 def load_postcode_data():
@@ -30,9 +34,10 @@ def load_postcode_data():
     # show data is loading
 
     # load data in format created using data-restructuring.py
-    fuel_poverty_df_filepath = os.path.join(app_dir,
-                                            'data',
-                                            'fuel_poverty_data.csv')
+    # fuel_poverty_df_filepath = os.path.join(app_dir,
+    #                                         'data',
+    #                                         'fuel_poverty_data.csv')
+    fuel_poverty_df_filepath = file_locations.loc['fuel_poverty_data.csv']['location']
     fuel_poverty_df = pd.read_csv(fuel_poverty_df_filepath,
                                   index_col='Postcode')
 
@@ -59,9 +64,10 @@ def load_council_area_df():
     Output: area summary dataframe including area boundary details.
     '''
 
-    council_areas_df_filepath = os.path.join(app_dir,
-                                             'data',
-                                             'scottish_areas.csv')
+    # council_areas_df_filepath = os.path.join(app_dir,
+    #                                          'data',
+    #                                          'scottish_areas.csv')
+    council_areas_df_filepath = file_locations.loc['scottish_areas.csv']['location']
     council_areas_df = pd.read_csv(council_areas_df_filepath,
                                    index_col='District')
     council_areas_df.columns = ['postcodes', 'bounds']
@@ -78,19 +84,24 @@ def import_geojson(district):
     Output: dictionary containing featurecollection.
     '''
 
-    filepath = os.path.join(app_dir,
-                            'data',
-                            'geo_data_by_district',
-                            f'{district}.json')
-    if not os.path.exists(filepath):
-        f = open(os.path.join(app_dir,
-                              'data',
-                              'geo_data_by_district',
-                              '01_blank.geojson'))
+    # filepath = os.path.join(app_dir,
+    #                         'data',
+    #                         'geo_data_by_district',
+    #                         f'{district}.json')
+    # if not os.path.exists(filepath):
+    #     f = open(os.path.join(app_dir,
+    #                           'data',
+    #                           'geo_data_by_district',
+    #                           '01_blank.geojson'))
     # if no file exists, import blank geojson
-    else:
-        f = open(filepath)
-    data = json.load(f)
+    # else:
+    #     f = open(filepath)
+    # data = json.load(f)
+    # # import data and load using json format to python dictionary
+
+    url = file_locations.loc[f'{district}.json']['location']
+    f = urlopen(url)
+    data = json.loads(f.read())
     # import data and load using json format to python dictionary
 
     return data
@@ -154,13 +165,13 @@ def add_layer(geojson_data_dict, series, show, name):
                             aliases=["Postcode:  "]))
 
 
-@st.cache_resource()
-def load_map(district, series_list, areas_df):
-
-    geojson_data_dict = import_geojson(district)
+def load_map(geojson_data_dict, district, series_list, areas_df):
 
     map = folium.Map(tiles=None, prefer_canvas=True)
     folium.TileLayer('cartodbpositron', control=False).add_to(map)
+
+    bounds = ast.literal_eval(areas_df.loc[district]['bounds'])
+    map.fit_bounds(bounds, padding=(-2, -2))
 
     layer_display_status = [True, False, False]
     layer_names = ['Fuel Poverty Risk Rating',
@@ -173,12 +184,10 @@ def load_map(district, series_list, areas_df):
                   layer_display_status[i],
                   layer_names[i]).add_to(map)
 
-    # map.fit_bounds(map.get_bounds(), padding=(-2, -2))
-    bounds = ast.literal_eval(areas_df.loc[district]['bounds'])
-    map.fit_bounds(bounds, padding=(-2, -2))
     folium.LayerControl(collapsed=False).add_to(map)
 
-    return map
+    st_map = st_folium(map, width=700, height=450)
+
 
 
 def main():
@@ -204,12 +213,14 @@ def main():
         selected_council_area_postcodes = council_areas_df.loc[
             requested_council_area]['postcodes']
 
-        map = load_map(requested_council_area,
-                       series_list,
-                       council_areas_df)
-        st.write('Building map...'
-                 'There are a lot of polygons to load—so please be patient.')
-        st_map = st_folium(map, width=700, height=450)
+        st.write('Building map. '
+                 'There are a lot of polygons to load—so please be patient...')
+        
+        geojson_data_dict = import_geojson(requested_council_area)
+        load_map(geojson_data_dict,
+                 requested_council_area,
+                 series_list,
+                 council_areas_df)
 
         st.markdown(f'Showing postcodes {selected_council_area_postcodes} '
                     f'that contain homes in council area'
