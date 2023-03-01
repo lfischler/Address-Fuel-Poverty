@@ -76,7 +76,6 @@ def load_council_area_df():
     return council_areas_df
 
 
-@st.cache_data
 def import_geojson(district):
     '''
     Import shape files for each local area.
