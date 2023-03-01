@@ -172,10 +172,10 @@ def load_map(geojson_data_dict, district, series_list, areas_df):
     bounds = ast.literal_eval(areas_df.loc[district]['bounds'])
     map.fit_bounds(bounds, padding=(-2, -2))
 
-    layer_display_status = [True, False, False]
-    layer_names = ['Fuel Poverty Risk Rating',
-                   'Index of Multiple Deprivation',
-                   'EPC Mean for Postcode']
+    layer_display_status = [False, False, True]
+    layer_names = ['Index of Multiple Deprivation',
+                   'Energy Preformance Mean for Postcode',
+                   'Fuel Poverty Risk Rating']
 
     for i in range(len(series_list)):
         add_layer(geojson_data_dict,
