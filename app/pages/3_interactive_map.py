@@ -17,6 +17,7 @@ file_locations = pd.read_csv(os.path.join(app_dir,
                                           'file_locations.csv'),
                              index_col='filename')
 
+
 @st.cache_data  # cache the data that was loaded for quicker loadtimes
 def load_postcode_data():
     '''
@@ -82,21 +83,6 @@ def import_geojson(district):
 
     Output: dictionary containing featurecollection.
     '''
-
-    # filepath = os.path.join(app_dir,
-    #                         'data',
-    #                         'geo_data_by_district',
-    #                         f'{district}.json')
-    # if not os.path.exists(filepath):
-    #     f = open(os.path.join(app_dir,
-    #                           'data',
-    #                           'geo_data_by_district',
-    #                           '01_blank.geojson'))
-    # if no file exists, import blank geojson
-    # else:
-    #     f = open(filepath)
-    # data = json.load(f)
-    # # import data and load using json format to python dictionary
 
     url = file_locations.loc[f'{district}.json']['location']
     f = urlopen(url)
@@ -166,67 +152,72 @@ def add_layer(geojson_data_dict, series, show, name):
 
 def load_map(geojson_data_dict, district, series_list, areas_df):
 
+    # creates a new map item with cartodbpositron layer
     map = folium.Map(tiles=None, prefer_canvas=True)
     folium.TileLayer('cartodbpositron', control=False).add_to(map)
 
+    # import bounds of local council area (convert from list first)
     bounds = ast.literal_eval(areas_df.loc[district]['bounds'])
     map.fit_bounds(bounds, padding=(-2, -2))
 
+    # assigns layer name and display status
     layer_display_status = [False, False, True]
     layer_names = ['Index of Multiple Deprivation',
                    'Energy Preformance Mean for Postcode',
                    'Fuel Poverty Risk Rating']
 
+    # for each layer in the list, add it to the map
     for i in range(len(series_list)):
         add_layer(geojson_data_dict,
                   series_list[i],
                   layer_display_status[i],
                   layer_names[i]).add_to(map)
 
+    # add key with layer control
     folium.LayerControl(collapsed=False).add_to(map)
 
+    # print map
     st_map = st_folium(map, width=700, height=450)
-
 
 
 def main():
 
-    # %%
-    # simd_series, epc_series, fpr_series, council_areas_df = load_data()
+    # run functions to load the data required
     series_list = load_postcode_data()
     council_areas_df = load_council_area_df()
 
-    # st.set_page_config(layout='wide')
+    # formattin the page
     st.title('Interactive Fuel Poverty Map')
 
+    # display dropdown menu of different council aresa
     council_area_names_list = council_areas_df.index.to_list()
     council_area_names_list = [' '] + council_area_names_list
     requested_council_area = st.selectbox(
         'Which council area would you like to view?',
         council_area_names_list)
 
-    # %%
-
     if requested_council_area != ' ':
-
+        # set council area requested
         selected_council_area_postcodes = council_areas_df.loc[
             requested_council_area]['postcodes']
 
         st.write('Building map. '
                  'There are a lot of polygons to load—so please be patient...')
-        
+
+        # import spatial polygon data and load map
         geojson_data_dict = import_geojson(requested_council_area)
         load_map(geojson_data_dict,
                  requested_council_area,
                  series_list,
                  council_areas_df)
 
+        # give details on which postcodes we're seeing
         st.markdown(f'Showing postcodes {selected_council_area_postcodes} '
                     f'that contain homes in council area'
                     f' {requested_council_area}.'
                     f'\nFor more information on how we calculate our fuel '
                     f'poverty score, please see [the about section]'
-                    f'(1_about.py/#our-fuel-poverty-risk-rating).')
+                    f'(1_about.py).')
 
 
 if __name__ == "__main__":

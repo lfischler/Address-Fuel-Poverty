@@ -4,10 +4,8 @@ import os
 import numpy as np
 
 # Links for use in body text
-more_smid = ('https://www.gov.scot/collections/scottish-index-of-multiple-'
-             'deprivation-2020/')
-more_epc = ('https://www.gov.scot/publications/energy-performance-certificates'
-            '-introduction/')
+more_simd = ('https://www.gov.scot/collections/scottish-index-of-multiple-deprivation-2020/')
+more_epc = ('https://www.mygov.scot/energy-performance-certificates')
 
 # Title and intro
 st.markdown('# Postcode Lookup Tool')
@@ -55,30 +53,37 @@ if st.button('Submit'):
         # if no postcode has been entered, alert the user
 
     if score_dict['simd percentile score'] != 'n/a':
-    # if there is a value saved under simd score:
+        # if there is a value saved under simd score:
 
         # display overview table with three columns containing score for that
-        # value and further information. Scores are shown using the nbuilt Streamlit
-        # metric format
-        st.markdown('## Postcode Overview')
+        # value and further information. Scores are shown using the inbuilt
+        # Streamlit metric format
+        st.markdown('## Postcode Overview'
+                    '\nLower numbers mean a worse score.')
         col1, col2, col3 = st.columns(3)
         with col1:
+            score = score_dict['simd percentile score']
+            value = str(score) + '/100'
             st.markdown('**Index of Multiple Deprivation score**')
             st.metric(label="Percentile",
-                      value=score_dict['simd percentile score'])
-            st.markdown(f'[About the SIMD.]({more_smid})')
+                      value=value)
+            st.markdown(f'[About the SIMD.]({more_simd})')
 
         with col2:
+            score = score_dict['epc score']
+            value = str(score) + '/100'
             st.markdown('**Mean EPC rating for this postcode**')
             st.metric(label="Mean Score",
-                      value=score_dict['epc score'])
+                      value=value)
             st.markdown(f'[About EPC ratings.]({more_epc})')
 
         with col3:
+            score = score_dict['fpr score']
+            value = str(score) + '/100'
             st.markdown('**Estimated fuel poverty risk rating**')
             st.metric(label="Score",
-                      value=score_dict['fpr score'])
-            st.markdown('[How we calculate this.](1_about.py#fps)')
+                      value=value)
+            st.markdown('[How we calculate this.](1_about.py#our-fuel-poverty-risk-rating)')
 
     else:
         st.write('Sorry. This postcode has not been recognised.')

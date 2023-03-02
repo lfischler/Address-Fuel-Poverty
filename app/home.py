@@ -13,6 +13,6 @@ Please select an option from the sidebar to begin exploring.
 ---
 ### Take Part
 This webapp is the output of a collaborative project aiming to support fuel
-poverty activism. Please visit the project Github Repository for more details
+poverty activism. Please visit the [Address Fuel Pollution Github Repository](https://github.com/lfischler/Address-Fuel-Poverty) for more details
 on our collaborative process, ethos, and how you can contribute.
 ''')
