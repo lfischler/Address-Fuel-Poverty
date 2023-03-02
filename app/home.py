@@ -4,11 +4,12 @@ st.markdown('''# Tackling Fuel Poverty in Scotland
 
 Welcome to the Address Fuel Poverty communuity data webapp. This webapp and collaborative
 project helps activists, front-line organisations and local government in
-Scotland to target support to those at highest risk of fuel poverty.
+Scotland to target support and lead campaign work.
 
-Please select an option from the sidebar to begin exploring.
+Please select an option from the sidebar to begin.
 
 *Version 1.0 — updated February 2023.*
+
 
 ---
 ### Take Part
