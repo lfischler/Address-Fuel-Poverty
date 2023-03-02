@@ -16,10 +16,12 @@ st.markdown('This tool allows practitioners and community members to quickly '
 app_dir = os.path.dirname(os.path.dirname(__file__))
 # root directory for app
 
+file_locations = pd.read_csv(os.path.join(app_dir,
+                                          'file_locations.csv'),
+                             index_col='filename')
+
 # load data in format created using data-restructuring.py
-fuel_poverty_df_filepath = os.path.join(app_dir,
-                                        'data',
-                                        'fuel_poverty_data.csv')
+fuel_poverty_df_filepath = file_locations.loc['fuel_poverty_data.csv']['location']
 fuel_poverty_df = pd.read_csv(fuel_poverty_df_filepath,
                               index_col='Postcode')
 
